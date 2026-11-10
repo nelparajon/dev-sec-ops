@@ -18,7 +18,7 @@ jobs:
         dotnet-version: '10.0.x'
     
     - name: Restore Dependencies
-      run: dotnet restore PadelWeather.Api/PadelWeather.Api.csproj
+      run: dotnet restore ./PadelWeather.Api.csproj
     
     - name: Build
       run: dotnet build --no-restore ./PadelWeather.Api.csproj --configuration Release 
