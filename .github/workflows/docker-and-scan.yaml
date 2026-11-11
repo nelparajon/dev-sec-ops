@@ -1,0 +1,56 @@
+name: Docker and Scan
+on:
+  workflow_call:
+
+jobs:
+  docker:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+      - name: Build Docker image
+        run: docker build -t padelweatherapp:latest .
+
+      - name: Run Docker container
+        run: docker run -d --name padel-weather-app-aspnetcore -p 8080:8080 padelweatherapp:latest
+      
+      - name: Check if the container is running
+        run: docker ps --filter "name=padel-weather-app-aspnetcore"
+
+      - name: Health Check
+        run: |
+          count=0
+          max_retries=12 # 12 retries * 5 seconds = 60 seconds
+          while [ $count -lt $max_retries ]; do
+            if curl -m 5 -f http://localhost:8080/health
+            then
+              echo "Health check passed."
+              break
+            else
+              count=$((count + 1))
+              sleep 2
+              echo "Health check attempt $count failed. Retrying..."
+            fi
+          done
+          if [ $count -eq $max_retries ]; then
+            echo "Health check failed after $max_retries attempts."
+            exit 1
+          fi
+
+      - name: logging failures
+        if: failure() # This step will only run if the previous steps failed
+        run:  |
+          docker logs padel-weather-app-aspnetcore > docker-failure.log 2>&1
+
+      - name: Message Success
+        if: success() # This step will only run if the previous steps were successful
+        run: echo "Docker image built, container running and health OK."
+      
+      - name: Stop and Remove Docker container
+        if: always() # This step will run regardless of the previous steps' success or failure
+        run: |
+          docker stop padel-weather-app-aspnetcore || true
+          docker rm padel-weather-app-aspnetcore || true
+
+ 

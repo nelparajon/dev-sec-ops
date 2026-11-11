@@ -19,7 +19,7 @@ COPY --from=build /app/publish /app
 ENV ASPNETCORE_URLS=http://+:8080
 
 EXPOSE 8080
-
-USER app
+# Set the user to a non-root user for security, use 1024 > ports
+USER app 
 
 CMD ["dotnet", "PadelWeather.Api.dll"]
