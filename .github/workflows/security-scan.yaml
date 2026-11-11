@@ -20,3 +20,10 @@ jobs:
         severity: 'HIGH,CRITICAL'
         ignore-unfixed: true
         exit-code: '1'
+        
+    - name: Guardar reporte como artifact
+      if: always() # Asegura que se guarde incluso si Trivy falla por encontrar vulnerabilidades
+      uses: actions/upload-artifact@v4
+      with:
+        name: reporte-trivy
+        path: trivy-report.json
