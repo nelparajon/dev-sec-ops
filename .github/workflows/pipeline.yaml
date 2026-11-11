@@ -14,3 +14,7 @@ jobs:
     needs: ci
     uses: ./.github/workflows/security-scan.yaml
   
+  docker-and-scan:
+    needs: security-scan
+    uses: ./.github/workflows/docker-and-scan.yaml
+  
