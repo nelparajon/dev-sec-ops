@@ -1,6 +1,8 @@
 using System.Globalization;
 using System.Net.Http.Json;
 using System.Text.Json.Serialization;
+using DevSecOps.Dtos;
+using DevSecOps.Services;
 
 var builder = WebApplication.CreateBuilder(args);
 
@@ -67,80 +69,3 @@ app.MapGet("/api/weather/padel", async (
 });
 
 app.Run();
-
-public sealed class WeatherService(HttpClient httpClient)
-{
-    public async Task<CurrentWeather> GetCurrentWeatherAsync(
-        double latitude,
-        double longitude,
-        CancellationToken cancellationToken)
-    {
-        var lat = latitude.ToString(CultureInfo.InvariantCulture);
-        var lon = longitude.ToString(CultureInfo.InvariantCulture);
-
-        var url = $"v1/forecast?latitude={lat}&longitude={lon}" +
-                  "&current=temperature_2m,precipitation,wind_speed_10m";
-
-        var response = await httpClient.GetFromJsonAsync<OpenMeteoResponse>(
-            url, cancellationToken);
-
-        if (response?.Current is null)
-        {
-            throw new HttpRequestException("The weather provider returned an invalid response.");
-        }
-
-        return new CurrentWeather(
-            response.Current.Temperature,
-            response.Current.Precipitation,
-            response.Current.WindSpeed);
-    }
-}
-
-public sealed class OpenMeteoResponse
-{
-    [JsonPropertyName("current")]
-    public OpenMeteoCurrent? Current { get; set; }
-}
-
-public sealed class OpenMeteoCurrent
-{
-    [JsonPropertyName("temperature_2m")]
-    public double Temperature { get; set; }
-
-    [JsonPropertyName("precipitation")]
-    public double Precipitation { get; set; }
-
-    [JsonPropertyName("wind_speed_10m")]
-    public double WindSpeed { get; set; }
-}
-
-public sealed record CurrentWeather(
-    double Temperature,
-    double Precipitation,
-    double WindSpeed);
-
-public sealed record PadelWeatherResponse(
-    string Location,
-    double TemperatureCelsius,
-    double PrecipitationMillimeters,
-    double WindSpeedKmh,
-    string PlayRecommendation);
-
-public static class PadelRecommendation
-{
-    // Simple illustrative rules for the exercise, not professional sports advice.
-    public static string Create(double temperature, double precipitation, double windSpeed)
-    {
-        if (precipitation >= 1 || windSpeed >= 35)
-        {
-            return "NotRecommended";
-        }
-
-        if (temperature < 5 || temperature > 35 || windSpeed >= 25)
-        {
-            return "UseCaution";
-        }
-
-        return "Favorable";
-    }
-}
