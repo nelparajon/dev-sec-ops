@@ -1,0 +1,15 @@
+name: DevSecOps CI
+
+on:
+  push:
+    branches: [ "main" ]
+  pull_request:
+    branches: [ "main" ]
+
+jobs:
+  ci:
+    uses: ./.github/workflows/ci.yaml
+  
+  security-scan:
+    uses: ./.github/workflows/security-scan.yaml
+  

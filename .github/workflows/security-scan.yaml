@@ -1,0 +1,22 @@
+name: Security Scan
+
+on:
+  workflow_call:
+
+jobs:
+ security:
+  runs-on: ubuntu-latest
+  steps:
+    - name: Checkout code
+      uses: actions/checkout@v4
+
+    - name: Run Trivy scan
+      uses: aquasecurity/trivy-action@v0.36.0
+      with:
+        scan-type: 'fs'
+        scanners: 'vuln,secret,misconfig'
+        format: 'json'
+        output: 'trivy-report.json'
+        severity: 'HIGH,CRITICAL'
+        ignore-unfixed: true
+        exit-code: '1'
